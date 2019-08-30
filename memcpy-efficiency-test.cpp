@@ -1,7 +1,9 @@
 #include <iostream>
 #include <chrono>
 
-#define NUMBER_ELEMENTS 10000000
+#include "libs/FastMemcpy/FastMemcpy_Avx.h"
+
+#define NUMBER_ELEMENTS 0x10000000
 
 int main()
 {
@@ -23,11 +25,17 @@ int main()
 
 	auto elapsed = std::chrono::high_resolution_clock::now() - start;
 	double nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
-	printf( "memset: %.3lf bytes/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec );
+	printf( "memset : %.3lf bytes/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec );
 
-	
-	
-    //std::cout << "Hello World!\n";
+	memset( arrDst, 0, NUMBER_ELEMENTS * sizeof( double ) / sizeof( int ) );
+
+	start = std::chrono::high_resolution_clock::now();
+
+	memcpy_fast( arrDst, arrSrc, NUMBER_ELEMENTS * sizeof( double ) );
+
+	elapsed = std::chrono::high_resolution_clock::now() - start;
+	nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
+	printf( "skywind3000/FastMemcpy::memcpy_fast : %.3lf bytes/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec );
 
 	delete[] arrSrc;
 	delete[] arrDst;
