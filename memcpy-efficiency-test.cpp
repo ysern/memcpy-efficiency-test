@@ -2,13 +2,26 @@
 #include <chrono>
 
 #include "libs/FastMemcpy/FastMemcpy_Avx.h"
+#include "SO_Serge_Rogatch.h"
 
 #define NUMBER_ELEMENTS 0x10000000
+#define BUFFER_ALIGNMENT_SIZE 32
 
 int main()
 {
-	double* arrSrc = new double[ NUMBER_ELEMENTS ];
-	double* arrDst = new double[ NUMBER_ELEMENTS ];
+	double* arrUnalignedSrc = new double[ NUMBER_ELEMENTS + BUFFER_ALIGNMENT_SIZE ]; // Create double size buffers
+	double* arrUnalignedDst = new double[ NUMBER_ELEMENTS + BUFFER_ALIGNMENT_SIZE ]; // to make sure desired 
+
+	double * arrSrc = arrUnalignedSrc;
+	if ( (intptr_t( arrSrc ) & BUFFER_ALIGNMENT_SIZE - 1) != 0 )
+	{
+		arrSrc = reinterpret_cast< double * >( (intptr_t( arrSrc ) & ~(BUFFER_ALIGNMENT_SIZE - 1)) + BUFFER_ALIGNMENT_SIZE );
+	}
+	double * arrDst = arrUnalignedDst;
+	if ( (intptr_t( arrDst ) & BUFFER_ALIGNMENT_SIZE - 1) != 0 )
+	{
+		arrDst = reinterpret_cast< double * >( (intptr_t( arrDst ) & ~(BUFFER_ALIGNMENT_SIZE - 1)) + BUFFER_ALIGNMENT_SIZE );
+	}
 
 	double * pElem = arrSrc;
 	for ( int i = 0; i < NUMBER_ELEMENTS; ++i )
@@ -37,6 +50,16 @@ int main()
 	nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
 	printf( "skywind3000/FastMemcpy::memcpy_fast : %.3lf bytes/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec );
 
-	delete[] arrSrc;
-	delete[] arrDst;
+	memset( arrDst, 0, NUMBER_ELEMENTS * sizeof( double ) / sizeof( int ) );
+
+	start = std::chrono::high_resolution_clock::now();
+
+	fastMemcpy( arrDst, arrSrc, NUMBER_ELEMENTS * sizeof( double ) );
+
+	elapsed = std::chrono::high_resolution_clock::now() - start;
+	nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
+	printf( "SO Serge Rogatch's Answer : %.3lf bytes/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec );
+
+	delete[] arrUnalignedSrc;
+	delete[] arrUnalignedDst;
 }

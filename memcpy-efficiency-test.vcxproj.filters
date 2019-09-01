@@ -32,5 +32,8 @@
     <ClInclude Include="libs\FastMemcpy\FastMemcpy_Avx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SO_Serge_Rogatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
