@@ -38,7 +38,7 @@ int main()
 
 	auto elapsed = std::chrono::high_resolution_clock::now() - start;
 	double nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
-	printf( "memset : %.3lf bytes/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec );
+	printf( "memcpy : %.3lf GB/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec / 1024 / 1024 / 1024 );
 
 	memset( arrDst, 0, NUMBER_ELEMENTS * sizeof( double ) / sizeof( int ) );
 
@@ -48,7 +48,7 @@ int main()
 
 	elapsed = std::chrono::high_resolution_clock::now() - start;
 	nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
-	printf( "skywind3000/FastMemcpy::memcpy_fast : %.3lf bytes/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec );
+	printf( "skywind3000/FastMemcpy::memcpy_fast : %.3lf GB/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec / 1024 / 1024 / 1024 );
 
 	memset( arrDst, 0, NUMBER_ELEMENTS * sizeof( double ) / sizeof( int ) );
 
@@ -58,7 +58,7 @@ int main()
 
 	elapsed = std::chrono::high_resolution_clock::now() - start;
 	nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
-	printf( "SO Serge Rogatch's Answer : %.3lf bytes/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec );
+	printf( "SO Serge Rogatch's Answer : %.3lf GB/sec\n", NUMBER_ELEMENTS * sizeof( double ) / nSec / 1024 / 1024 / 1024 );
 
 	delete[] arrUnalignedSrc;
 	delete[] arrUnalignedDst;
