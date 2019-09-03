@@ -25,7 +25,7 @@ public:
 
 int main()
 {
-	const int loopCount = 10;
+	const int loopCount = 100;
 	double * arrUnalignedSrc = new double[ NUMBER_ELEMENTS + BUFFER_ALIGNMENT_SIZE ]; // Create double size buffers
 	double * arrUnalignedDst = new double[ NUMBER_ELEMENTS + BUFFER_ALIGNMENT_SIZE ]; // to make sure desired 
 
@@ -62,7 +62,7 @@ int main()
 
 	// Print result 
 	double nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
-	printf( "memset : %s bytes/sec\n", Foo::FormatWithCommas( NUMBER_ELEMENTS * sizeof( double ) / nSec * loopCount ).c_str() );
+	printf( "memcpy : %s bytes/sec\n", Foo::FormatWithCommas( NUMBER_ELEMENTS * sizeof( double ) / nSec * loopCount ).c_str() );
 
 
 	// Test 2: memcpy_fast
@@ -83,23 +83,64 @@ int main()
 	nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
 	printf( "skywind3000/FastMemcpy::memcpy_fast : %s bytes/sec\n", Foo::FormatWithCommas( NUMBER_ELEMENTS * sizeof( double ) / nSec * loopCount ).c_str() );
 
-	// Test 3: fastMemcpy
+	//// Test 3: fastMemcpy
+	////
+
+	//memset( arrDst, 0, NUMBER_ELEMENTS * sizeof( double ) / sizeof( int ) );
+
+	//// Copy once outside of loop
+	//fastMemcpy( arrDst, arrSrc, NUMBER_ELEMENTS * sizeof( double ) );
+
+	//// Do the bulk of the test 
+	//start = std::chrono::high_resolution_clock::now();
+	//for ( int i = 0; i < loopCount; i++ )
+	//	fastMemcpy( arrDst, arrSrc, NUMBER_ELEMENTS * sizeof( double ) );
+	//elapsed = std::chrono::high_resolution_clock::now() - start;
+
+	//// Print result 
+	//nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
+	//printf( "SO Serge Rogatch's Answer : %s bytes/sec\n", Foo::FormatWithCommas( NUMBER_ELEMENTS * sizeof( double ) / nSec * loopCount ).c_str() );
+
+	// Test 3: memcpy unaligned source
 	//
 
-	memset( arrDst, 0, NUMBER_ELEMENTS * sizeof( double ) / sizeof( int ) );
+	arrSrc = arrUnalignedSrc;
+	if ( (intptr_t( arrSrc ) & BUFFER_ALIGNMENT_SIZE - 1) == 0 )
+	{
+		arrSrc++;
+	}
 
-	// Copy once outside of loop
-	fastMemcpy( arrDst, arrSrc, NUMBER_ELEMENTS * sizeof( double ) );
+	// Copy once outside of loop 
+	memcpy( arrDst, arrSrc, NUMBER_ELEMENTS * sizeof( double ) );
 
-	// Do the bulk of the test 
+	// Do the bulk of the test
 	start = std::chrono::high_resolution_clock::now();
 	for ( int i = 0; i < loopCount; i++ )
-		fastMemcpy( arrDst, arrSrc, NUMBER_ELEMENTS * sizeof( double ) );
+		memcpy( arrDst, arrSrc, NUMBER_ELEMENTS * sizeof( double ) );
 	elapsed = std::chrono::high_resolution_clock::now() - start;
 
 	// Print result 
 	nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
-	printf( "SO Serge Rogatch's Answer : %s bytes/sec\n", Foo::FormatWithCommas( NUMBER_ELEMENTS * sizeof( double ) / nSec * loopCount ).c_str() );
+	printf( "memcpy (UNALIGNED SOURCE) : %s bytes/sec\n", Foo::FormatWithCommas( NUMBER_ELEMENTS * sizeof( double ) / nSec * loopCount ).c_str() );
+
+
+	// Test 2: memcpy_fast unaligned source
+	//
+	
+	memset( arrDst, 0, NUMBER_ELEMENTS * sizeof( double ) / sizeof( int ) );
+
+	// Copy once outside of loop
+	memcpy_fast( arrDst, arrSrc, NUMBER_ELEMENTS * sizeof( double ) );
+
+	// Do the bulk of the test
+	start = std::chrono::high_resolution_clock::now();
+	for ( int i = 0; i < loopCount; i++ )
+		memcpy_fast( arrDst, arrSrc, NUMBER_ELEMENTS * sizeof( double ) );
+	elapsed = std::chrono::high_resolution_clock::now() - start;
+
+	// Print result
+	nSec = 1e-6 * std::chrono::duration_cast< std::chrono::microseconds >(elapsed).count();
+	printf( "skywind3000/FastMemcpy::memcpy_fast (UNALIGNED SOURCE): %s bytes/sec\n", Foo::FormatWithCommas( NUMBER_ELEMENTS * sizeof( double ) / nSec * loopCount ).c_str() );
 
 	delete[] arrUnalignedSrc;
 	delete[] arrUnalignedDst;
